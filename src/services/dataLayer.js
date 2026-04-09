@@ -14,7 +14,7 @@ export const initializeDataLayer = () => {
   if (!window.dataLayer) {
     window.dataLayer = [];
   }
-  console.log('✅ Data Layer initialized');
+
 };
 
 /**
@@ -24,9 +24,6 @@ export const initializeDataLayer = () => {
 export const pushToDataLayer = (data) => {
   if (window.dataLayer) {
     window.dataLayer.push(data);
-    console.log('📊 Data Layer Event Pushed:', data);
-  } else {
-    console.warn('⚠️  Data Layer not initialized. Call initializeDataLayer() first');
   }
 };
 
@@ -217,7 +214,6 @@ export const pushPurchase = (order) => {
   
   // Prevent duplicate purchase events for the same order
   if (purchaseCache.has(orderId)) {
-    console.log('ℹ️  Purchase event already tracked (duplicate prevented):', orderId);
     return;
   }
   
