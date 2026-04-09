@@ -3,8 +3,8 @@
  * Initializes and manages window.dataLayer for event tracking
  */
 
-// Cache to prevent duplicate page views
-const pageViewCache = new Set();
+// Cache to prevent duplicate purchase event
+const purchaseCache = new Set();
 
 /**
  * Initialize the global data layer
@@ -31,19 +31,12 @@ export const pushToDataLayer = (data) => {
 };
 
 /**
- * Push page view data (deduplicated to prevent double-firing in Strict Mode)
+ * Push page view data
  * @param {string} pageName - Name of the page
  * @param {object} pageData - Additional page data
  */
 export const pushPageView = (pageName, pageData = {}) => {
-  const cacheKey = `${pageName}_${pageData.pageType || 'default'}`;
-  
-  // Check if we've already fired this page view
-  if (pageViewCache.has(cacheKey)) {
-    console.log('ℹ️  Page view already tracked (duplicate prevented):', pageName);
-    return;
-  }
-  
+
   pushToDataLayer({
     event: 'page_view',
     page_name: pageName,
@@ -54,7 +47,6 @@ export const pushPageView = (pageName, pageData = {}) => {
     ...pageData,
   });
   
-  pageViewCache.add(cacheKey);
 };
 
 /**
@@ -217,10 +209,18 @@ export const pushCheckoutStep = (step, checkoutData = {}) => {
 };
 
 /**
- * Push purchase event
+  * Push purchase event (deduplicated to prevent accidental duplicate orders)
  * @param {object} order - Order object
  */
 export const pushPurchase = (order) => {
+    const orderId = order._id || order.id;
+  
+  // Prevent duplicate purchase events for the same order
+  if (purchaseCache.has(orderId)) {
+    console.log('ℹ️  Purchase event already tracked (duplicate prevented):', orderId);
+    return;
+  }
+  
   pushToDataLayer({
     event: 'purchase',
     order_id: order._id,
@@ -235,6 +235,8 @@ export const pushPurchase = (order) => {
     currency: 'USD',
     timestamp: new Date().toISOString(),
   });
+
+  purchaseCache.add(orderId);
 };
 
 /**
@@ -293,14 +295,6 @@ export const getDataLayer = () => {
   return window.dataLayer || [];
 };
 
-/**
- * Clear page view cache (useful when navigating between pages)
- */
-export const clearPageViewCache = () => {
-  pageViewCache.clear();
-  console.log('✅ Page view cache cleared');
-};
-
 export default {
   initializeDataLayer,
   pushToDataLayer,
@@ -320,5 +314,4 @@ export default {
   pushUserInfo,
   pushCustomEvent,
   getDataLayer,
-  clearPageViewCache,
 };
