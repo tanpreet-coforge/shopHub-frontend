@@ -15,7 +15,7 @@ export const trackPageView = (pageName, additionalData = {}) => {
       page_name: pageName,
       ...additionalData,
     });
-    console.log(`📊 Tracked page view: ${pageName}`);
+    
   }
 };
 
@@ -33,7 +33,6 @@ export const trackProductView = (product) => {
       product_category: product.category,
       product_rating: product.rating,
     });
-    console.log(`📊 Tracked product view: ${product.name}`);
   }
 };
 
@@ -51,7 +50,6 @@ export const trackAddToCart = (product, quantity = 1) => {
       product_price: product.price,
       quantity: quantity,
     });
-    console.log(`📊 Tracked add to cart: ${product.name} x${quantity}`);
   }
 };
 
@@ -69,7 +67,6 @@ export const trackRemoveFromCart = (product, quantity = 1) => {
       product_price: product.price,
       quantity: quantity,
     });
-    console.log(`📊 Tracked remove from cart: ${product.name}`);
   }
 };
 
@@ -84,7 +81,6 @@ export const trackCartView = (cart) => {
       cart_items: cart.totalItems,
       cart_total: cart.totalPrice,
     });
-    console.log(`📊 Tracked cart view: ${cart.totalItems} items`);
   }
 };
 
@@ -100,7 +96,6 @@ export const trackSearch = (searchTerm, resultsCount = 0) => {
       search_term: searchTerm,
       search_results_count: resultsCount,
     });
-    console.log(`📊 Tracked search: "${searchTerm}"`);
   }
 };
 
@@ -116,7 +111,6 @@ export const trackCheckoutStep = (step, cartData = {}) => {
       checkout_step: step,
       ...cartData,
     });
-    console.log(`📊 Tracked checkout step: ${step}`);
   }
 };
 
@@ -133,7 +127,6 @@ export const trackPurchase = (order) => {
       order_items: order.items,
       items_count: order.items?.length || 0,
     });
-    console.log(`📊 Tracked purchase: Order #${order._id}`);
   }
 };
 
@@ -147,7 +140,6 @@ export const trackUserLogin = (userId) => {
       event: 'user_login',
       user_id: userId,
     });
-    console.log(`📊 Tracked user login: ${userId}`);
   }
 };
 
@@ -161,7 +153,6 @@ export const trackUserRegistration = (userId) => {
       event: 'user_registration',
       user_id: userId,
     });
-    console.log(`📊 Tracked user registration: ${userId}`);
   }
 };
 
@@ -173,7 +164,6 @@ export const trackUserLogout = () => {
     window.adobeDataLayer?.push({
       event: 'user_logout',
     });
-    console.log(`📊 Tracked user logout`);
   }
 };
 
@@ -188,6 +178,5 @@ export const trackCustomEvent = (eventName, eventData = {}) => {
       event: eventName,
       ...eventData,
     });
-    console.log(`📊 Tracked custom event: ${eventName}`, eventData);
   }
 };
