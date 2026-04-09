@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { updateWishlistState } from '../services/appState';
 
 export const WishlistContext = createContext();
 
@@ -10,6 +11,8 @@ export const WishlistProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    // Update appState whenever wishlist changes
+    updateWishlistState(wishlist.length);
   }, [wishlist]);
 
   const addToWishlist = (product) => {
