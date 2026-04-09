@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -6,6 +5,7 @@ import { ToastProvider } from './context/ToastContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { DataLayerProvider } from './context/DataLayerContext';
 import { useSyncUserDataOnLogin } from './hooks/useSyncUserDataOnLogin';
+
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
@@ -28,14 +28,13 @@ import { ContactPage } from './pages/ContactPage';
 
 import './index.css';
 
-function App() {
 /**
- * App content component that includes all routes and syncs user data on login
+ * App content component that includes all routes
+ * and syncs user data on login
  */
 function AppContent() {
-  // Sync cart and other user data when user logs in
   useSyncUserDataOnLogin();
-  
+
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -54,7 +53,14 @@ function AppContent() {
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="*" element={<div className="py-20 text-center text-2xl">Page Not Found</div>} />
+          <Route
+            path="*"
+            element={
+              <div className="py-20 text-center text-2xl">
+                Page Not Found
+              </div>
+            }
+          />
         </Routes>
       </main>
       <Footer />
