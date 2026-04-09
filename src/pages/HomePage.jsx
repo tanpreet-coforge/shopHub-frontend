@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productAPI } from '../services/api';
-import { useDataLayer } from '../hooks/useDataLayer';
+import { usePageView } from '../hooks/usePageView';
 import { ProductCard } from '../components/ProductCard';
 import { ChevronRight, Truck, Star, Lock, Award, Zap } from 'lucide-react';
 import { Button } from '../components/Button';
 
 export const HomePage = () => {
   const navigate = useNavigate();
-  const { pageView } = useDataLayer();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Track page view - updates both dataLayer and appState
+  usePageView('Home Page', { pageType: 'homepage' });
+  
   useEffect(() => {
     fetchFeaturedProducts();
-    // Track page view
-    pageView('Home Page', { pageType: 'homepage' });
   }, []);
 
   const fetchFeaturedProducts = async () => {
