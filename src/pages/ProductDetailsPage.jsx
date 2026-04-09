@@ -4,6 +4,8 @@ import { productAPI } from '../services/api';
 import { useCart } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { updatePageState } from '../services/appState';
+import { pushPageView } from '../services/dataLayer';
 import { Star, ShoppingCart, ChevronLeft } from 'lucide-react';
 import { Button } from '../components/Button';
 
@@ -12,7 +14,7 @@ export const ProductDetailsPage = () => {
   const navigate = useNavigate();
   const { addToCart, isLoading: isCartLoading } = useCart();
   const { success, error } = useToast();
-  const { productView, addToCart: trackAddToCart, pageView } = useDataLayer();
+  const { productView, addToCart: trackAddToCart } = useDataLayer();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,18 @@ export const ProductDetailsPage = () => {
     fetchProduct();
   }, [id]);
 
+  
+  // Track page view when product loads
+  useEffect(() => {
+    if (product) {
+      pushPageView(`Product: ${product.name}`, { pageType: 'product_detail' });
+      updatePageState({
+        name: `Product: ${product.name}`,
+        type: 'product_detail',
+      });
+    }
+  }, [product]);
+  
   const fetchProduct = async () => {
     try {
       setLoading(true);
@@ -30,7 +44,6 @@ export const ProductDetailsPage = () => {
       setProduct(response.data);
       // Track product view
       productView(response.data);
-      pageView(`Product: ${response.data.name}`, { pageType: 'product_detail' });
     } catch (error) {
       console.error('Error fetching product:', error);
     } finally {
