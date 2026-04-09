@@ -20,6 +20,7 @@ export const useAppState = () => {
   const getState = useCallback(appStateService.getAppState, []);
   const resetUser = useCallback(appStateService.resetUserState, []);
   const resetCart = useCallback(appStateService.resetCartState, []);
+  const updateWishlist = useCallback(appStateService.updateWishlistState, []);
 
   return {
     updatePageState: updatePage,
@@ -32,6 +33,7 @@ export const useAppState = () => {
     getAppState: getState,
     resetUserState: resetUser,
     resetCartState: resetCart,
+    updateWishlistState: updateWishlist,
   };
 };
 
