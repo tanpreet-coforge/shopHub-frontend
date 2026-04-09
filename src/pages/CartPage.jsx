@@ -4,6 +4,7 @@ import { useCart } from '../hooks/useAuth';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { usePageView } from '../hooks/usePageView';
 import { Trash2, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { Button } from '../components/Button';
 
@@ -11,7 +12,7 @@ export const CartPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { error } = useToast();
-  const { cartView, removeFromCart: trackRemoveFromCart, pageView } = useDataLayer();
+  const { cartView, removeFromCart: trackRemoveFromCart } = useDataLayer();
   const {
     cart,
     isLoading,
@@ -20,6 +21,9 @@ export const CartPage = () => {
     removeFromCart,
   } = useCart();
 
+  // Track page view - updates both dataLayer and appState
+  usePageView('Shopping Cart', { pageType: 'cart' });
+  
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -30,7 +34,6 @@ export const CartPage = () => {
   useEffect(() => {
     if (cart && isAuthenticated) {
       cartView(cart);
-      pageView('Shopping Cart', { pageType: 'cart' });
     }
   }, [cart, isAuthenticated]);
 
