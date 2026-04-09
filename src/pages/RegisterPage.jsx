@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { usePageView } from '../hooks/usePageView';
 import { Mail, Lock, User, UserPlus } from 'lucide-react';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -11,7 +12,10 @@ export const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, isLoading, error, user } = useAuth();
   const { error: showError } = useToast();
-  const { signUp: trackSignUp, pageView } = useDataLayer();
+  const { signUp: trackSignUp } = useDataLayer();
+  
+  // Track page view - updates both dataLayer and appState
+  usePageView('Register Page', { pageType: 'register' });
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -28,11 +32,6 @@ export const RegisterPage = () => {
       showError(error);
     }
   }, [error, showError]);
-
-  useEffect(() => {
-    // Track page view
-    pageView('Register Page', { pageType: 'register' });
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
