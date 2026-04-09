@@ -62,15 +62,15 @@ export const setupDataLayerDebugger = () => {
     },
   };
 
-  console.log(
-    '🔧 Data Layer Debugger Ready!\nUse window.debugDataLayer for debugging:'
-  );
-  console.log('  - window.debugDataLayer.getEvents()');
-  console.log('  - window.debugDataLayer.countEvents()');
-  console.log('  - window.debugDataLayer.getEventsByType("event_name")');
-  console.log('  - window.debugDataLayer.watch()');
-  console.log('  - window.debugDataLayer.getRecent(5)');
-  console.log('  - window.debugDataLayer.clear()');
+  // console.log(
+  //   '🔧 Data Layer Debugger Ready!\nUse window.debugDataLayer for debugging:'
+  // );
+  // console.log('  - window.debugDataLayer.getEvents()');
+  // console.log('  - window.debugDataLayer.countEvents()');
+  // console.log('  - window.debugDataLayer.getEventsByType("event_name")');
+  // console.log('  - window.debugDataLayer.watch()');
+  // console.log('  - window.debugDataLayer.getRecent(5)');
+  // console.log('  - window.debugDataLayer.clear()');
 };
 
 export default setupDataLayerDebugger;
