@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
+import { updateUserState, resetUserState } from '../services/appState';
 
 export const AuthContext = createContext();
 
@@ -7,6 +8,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+    // Update appState whenever user changes
+  useEffect(() => {
+    if (user) {
+      updateUserState({
+        logged_in: true,
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+      });
+    } else {
+      resetUserState();
+    }
+  }, [user]);
 
   useEffect(() => {
     // Try to restore user session from localStorage
