@@ -5,9 +5,12 @@ import { setupDataLayerDebugger } from '../services/dataLayerDebugger';
 export const DataLayerContext = createContext();
 
 export const DataLayerProvider = ({ children }) => {
+  // Initialize data layer on app load
+  initializeDataLayer();
+  
   useEffect(() => {
-    // Initialize data layer on app load
-    initializeDataLayer();
+    
+    
     // Setup debugger in development
     if (process.env.NODE_ENV === 'development') {
       setupDataLayerDebugger();
