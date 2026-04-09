@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { usePageView } from '../hooks/usePageView';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
@@ -11,11 +12,14 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, user } = useAuth();
   const { error: showError } = useToast();
-  const { login: trackLogin, pageView } = useDataLayer();
+  const { login: trackLogin } = useDataLayer();
+  
+  // Track page view - updates both dataLayer and appState
+  usePageView('Login Page', { pageType: 'login' });
   
   const [formData, setFormData] = useState({
-    email: 'testuser@example.com',
-    password: 'password123',
+    email: 'Email',
+    password: 'Password',
   });
 
   const [errors, setErrors] = useState({});
@@ -26,10 +30,6 @@ export const LoginPage = () => {
     }
   }, [error, showError]);
 
-  useEffect(() => {
-    // Track page view
-    pageView('Login Page', { pageType: 'login' });
-  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
