@@ -4,6 +4,7 @@ import { useCart } from '../hooks/useAuth';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { usePageView } from '../hooks/usePageView';
 import { orderAPI } from '../services/api';
 import { CheckCircle, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
@@ -13,7 +14,10 @@ export const CheckoutPage = () => {
   const { isAuthenticated, user } = useAuth();
   const { success, error } = useToast();
   const { cart, clearCart } = useCart();
-  const { checkoutStep, purchase, pageView } = useDataLayer();
+  const { checkoutStep, purchase } = useDataLayer();
+  
+  // Track page view - updates both dataLayer and appState
+  usePageView('Checkout Page', { pageType: 'checkout' });
   
   const [step, setStep] = useState(1); // 1: Shipping, 2: Payment, 3: Confirmation
   const [loading, setLoading] = useState(false);
@@ -46,11 +50,6 @@ export const CheckoutPage = () => {
       navigate('/cart');
     }
   }, [isAuthenticated, cart]);
-
-  // Track page view on mount
-  useEffect(() => {
-    pageView('Checkout Page', { pageType: 'checkout' });
-  }, []);
 
   // Track checkout step changes
   useEffect(() => {
