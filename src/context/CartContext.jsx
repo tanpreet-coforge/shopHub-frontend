@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { cartAPI } from '../services/api';
+import { updateCartState } from '../services/appState';
 
 export const CartContext = createContext();
 
@@ -7,6 +8,16 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+    // Update appState whenever cart changes
+  useEffect(() => {
+    if (cart) {
+      updateCartState({
+        items: cart.totalItems || 0,
+        value: cart.totalPrice || 0,
+      });
+    }
+  }, [cart]);
 
   const fetchCart = async () => {
     try {
