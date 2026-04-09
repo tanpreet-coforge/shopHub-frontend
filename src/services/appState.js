@@ -28,6 +28,9 @@ export const initializeAppState = () => {
         firstName: null,
         lastName: null,
       },
+      wishlist: {
+        items: 0,
+      },
       filters: {},
       searchTerm: null,
       lastUpdated: new Date().toISOString(),
@@ -168,6 +171,19 @@ export const resetCartState = () => {
   }
 };
 
+/**
+ * Update wishlist state
+ * @param {number} count - Number of items in wishlist
+ */
+export const updateWishlistState = (count = 0) => {
+  if (window.appState) {
+    window.appState.wishlist = {
+      items: count,
+    };
+    window.appState.lastUpdated = new Date().toISOString();
+  }
+};
+
 export default {
   initializeAppState,
   updatePageState,
@@ -180,4 +196,5 @@ export default {
   getAppState,
   resetUserState,
   resetCartState,
+  updateWishlistState,
 };
