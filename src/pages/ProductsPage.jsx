@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { usePageView } from '../hooks/usePageView';
+import { updateFiltersState, updateSearchTerm, clearSearchTerm, clearFilters } from '../services/appState';
 import { ProductCard } from '../components/ProductCard';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter } from 'lucide-react';
@@ -9,7 +11,10 @@ import { Search, Filter } from 'lucide-react';
 export const ProductsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { search, filterApplied, pageView } = useDataLayer();
+  const { search, filterApplied } = useDataLayer();
+  
+  // Track page view - updates both dataLayer and appState
+  usePageView('Products Page', { pageType: 'products_list' });
   
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -24,10 +29,23 @@ export const ProductsPage = () => {
 
   useEffect(() => {
     fetchCategories();
-    // Track page view on mount
-    pageView('Products Page', { pageType: 'products_list' });
   }, []);
 
+  // Update appState whenever filters or search changes
+  useEffect(() => {
+    if (filters.search) {
+      updateSearchTerm(filters.search);
+    } else {
+      clearSearchTerm();
+    }
+    
+    if (filters.category) {
+      updateFiltersState({ category: filters.category });
+    } else {
+      clearFilters();
+    }
+  }, [filters.search, filters.category]);
+  
   useEffect(() => {
     fetchProducts();
     // Track search or filter applied
