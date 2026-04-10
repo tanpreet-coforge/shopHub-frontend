@@ -5,6 +5,9 @@
 
 // Cache to prevent duplicate purchase event
 const purchaseCache = new Set();
+// Cache to prevent duplicate cart view events
+const cartViewCache = new Set();
+
 
 /**
  * Initialize the global data layer
