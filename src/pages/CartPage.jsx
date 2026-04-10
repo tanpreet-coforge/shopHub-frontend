@@ -30,13 +30,6 @@ export const CartPage = () => {
     }
   }, [isAuthenticated]);
 
-  // Track cart view when cart updates
-  useEffect(() => {
-    if (cart && isAuthenticated) {
-      cartView(cart);
-    }
-  }, [cart, isAuthenticated]);
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
