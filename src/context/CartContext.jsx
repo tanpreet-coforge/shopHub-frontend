@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, , useCallback } from 'react';
 import { cartAPI } from '../services/api';
 import { updateCartState } from '../services/appState';
 
@@ -19,18 +19,18 @@ export const CartProvider = ({ children }) => {
     }
   }, [cart]);
 
-  const fetchCart = async () => {
-    try {
-      setIsLoading(true);
-      const response = await cartAPI.getCart();
-      setCart(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching cart:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const fetchCart = useCallback(async () => {
+  try {
+    setIsLoading(true);
+    const response = await cartAPI.getCart();
+    setCart(response.data);
+    setError(null);
+  } catch (err) {
+    console.error('Error fetching cart:', err);
+  } finally {
+    setIsLoading(false);
+  }
+}, []);
 
   const addToCart = async (productId, quantity) => {
     try {
