@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
 import { Button } from '../components/Button';
+import { usePageView } from '../hooks/usePageView';
 import { Input, Textarea } from '../components/Input';
 import { useToast } from '../hooks/useToast';
 import { Card, CardBody } from '../components/Card';
