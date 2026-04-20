@@ -6,6 +6,9 @@ import { useToast } from '../hooks/useToast';
 import { Card, CardBody } from '../components/Card';
 
 export const ContactPage = () => {
+    // Track page view - updates both dataLayer and appState
+  usePageView('Contact Page', { pageType: 'Contact_form' });
+  
   const { success, error } = useToast();
   const [formData, setFormData] = useState({
     name: '',
