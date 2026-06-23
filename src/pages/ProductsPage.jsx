@@ -18,6 +18,7 @@ export const ProductsPage = () => {
   
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
   
   const [filters, setFilters] = useState({
@@ -25,10 +26,14 @@ export const ProductsPage = () => {
     category: searchParams.get('category') || '',
     sort: 'newest',
     page: 1,
+    priceRange: { min: 0, max: 10000 },
+    rating: 0,
+    brand: '',
   });
 
   useEffect(() => {
     fetchCategories();
+    fetchBrands();
   }, []);
 
   // Update appState whenever filters or search changes
@@ -39,12 +44,20 @@ export const ProductsPage = () => {
       clearSearchTerm();
     }
     
-    if (filters.category) {
-      updateFiltersState({ category: filters.category });
+    const filtersToUpdate = {};
+    if (filters.category) filtersToUpdate.category = filters.category;
+    if (filters.priceRange.min !== 0 || filters.priceRange.max !== 10000) {
+      filtersToUpdate.priceRange = filters.priceRange;
+    }
+    if (filters.rating > 0) filtersToUpdate.rating = filters.rating;
+    if (filters.brand) filtersToUpdate.brand = filters.brand;
+    
+    if (Object.keys(filtersToUpdate).length > 0) {
+      updateFiltersState(filtersToUpdate);
     } else {
       clearFilters();
     }
-  }, [filters.search, filters.category]);
+  }, [filters.search, filters.category, filters.priceRange, filters.rating, filters.brand]);
   
   useEffect(() => {
     fetchProducts();
@@ -52,7 +65,8 @@ export const ProductsPage = () => {
     if (filters.search) {
       search(filters.search, filters, products.length);
     }
-    if (filters.category) {
+    if (filters.category || filters.brand || filters.rating > 0 || 
+        (filters.priceRange.min !== 0 || filters.priceRange.max !== 10000)) {
       filterApplied(filters);
     }
   }, [filters]);
@@ -66,6 +80,17 @@ export const ProductsPage = () => {
     }
   };
 
+  const fetchBrands = async () => {
+    try {
+      const response = await productAPI.getCategories();
+      // Extract unique brands from the response (adjust based on your API)
+      // For now, using a placeholder - update with actual API endpoint if available
+      setBrands([]);
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+    }
+  };
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -75,6 +100,10 @@ export const ProductsPage = () => {
         category: filters.category || undefined,
         search: filters.search || undefined,
         sort: filters.sort,
+        minPrice: filters.priceRange.min,
+        maxPrice: filters.priceRange.max,
+        rating: filters.rating > 0 ? filters.rating : undefined,
+        brand: filters.brand || undefined,
       };
       
       const response = await productAPI.getAllProducts(
@@ -89,11 +118,25 @@ export const ProductsPage = () => {
   };
 
   const handleFilterChange = (filterName, value) => {
-    setFilters({
-      ...filters,
-      [filterName]: value,
-      page: 1,
-    });
+    if (filterName === 'priceMin' || filterName === 'priceMax') {
+      const newPrice = { ...filters.priceRange };
+      if (filterName === 'priceMin') {
+        newPrice.min = parseInt(value) || 0;
+      } else {
+        newPrice.max = parseInt(value) || 10000;
+      }
+      setFilters({
+        ...filters,
+        priceRange: newPrice,
+        page: 1,
+      });
+    } else {
+      setFilters({
+        ...filters,
+        [filterName]: value,
+        page: 1,
+      });
+    }
   };
 
   const handleSearch = (e) => {
@@ -153,6 +196,67 @@ export const ProductsPage = () => {
                 </select>
               </div>
 
+              {/* Price Range Filter */}
+              <div className="mb-6">
+                <h4 className="font-semibold mb-3">Price Range</h4>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Min: ₹{filters.priceRange.min}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      value={filters.priceRange.min}
+                      onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">
+                      Max: ₹{filters.priceRange.max}
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="10000"
+                      value={filters.priceRange.max}
+                      onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Rating Filter */}
+              <div className="mb-6">
+                <h4 className="font-semibold mb-3">Minimum Rating</h4>
+                <select
+                  value={filters.rating}
+                  onChange={(e) => handleFilterChange('rating', parseInt(e.target.value))}
+                  className="w-full px-3 py-2 border rounded"
+                >
+                  <option value="0">All Ratings</option>
+                  <option value="4">4 Stars & Up</option>
+                  <option value="3">3 Stars & Up</option>
+                  <option value="2">2 Stars & Up</option>
+                  <option value="1">1 Star & Up</option>
+                </select>
+              </div>
+
+              {/* Brand Filter */}
+              <div className="mb-6">
+                <h4 className="font-semibold mb-3">Brand</h4>
+                <input
+                  type="text"
+                  placeholder="Search brands..."
+                  value={filters.brand}
+                  onChange={(e) => handleFilterChange('brand', e.target.value)}
+                  className="w-full px-3 py-2 border rounded"
+                />
+              </div>
+
               {/* Sort Filter */}
               <div>
                 <h4 className="font-semibold mb-3">Sort By</h4>
@@ -166,6 +270,27 @@ export const ProductsPage = () => {
                   <option value="price-high">Price: High to Low</option>
                   <option value="rating">Highest Rated</option>
                 </select>
+              </div>
+
+              {/* Clear Filters Button */}
+              <div className="mt-6">
+                <button
+                  onClick={() => {
+                    setFilters({
+                      search: '',
+                      category: '',
+                      sort: 'newest',
+                      page: 1,
+                      priceRange: { min: 0, max: 10000 },
+                      rating: 0,
+                      brand: '',
+                    });
+                    clearFilters();
+                  }}
+                  className="w-full bg-gray-200 text-gray-800 px-4 py-2 rounded font-semibold hover:bg-gray-300 transition"
+                >
+                  Clear All Filters
+                </button>
               </div>
             </div>
           </div>
