@@ -153,6 +153,47 @@ export const pushFilterApplied = (filters) => {
 };
 
 /**
+ * Push login attempt event
+ * @param {object} userData - User data (email, method, etc.)
+ */
+export const pushLoginAttempt = (userData = {}) => {
+  pushToDataLayer({
+    event: 'login_attempt',
+    user_email: userData.email,
+    login_method: userData.method || 'email',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Push login success event
+ * @param {object} userData - User data (userId, email, method, etc.)
+ */
+export const pushLoginSuccess = (userData = {}) => {
+  pushToDataLayer({
+    event: 'login_success',
+    user_id: userData.userId,
+    user_email: userData.email,
+    login_method: userData.method || 'email',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
+ * Push login fail event
+ * @param {object} userData - User data (email, method, error, etc.)
+ */
+export const pushLoginFail = (userData = {}) => {
+  pushToDataLayer({
+    event: 'login_fail',
+    user_email: userData.email,
+    login_method: userData.method || 'email',
+    error_message: userData.error,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
  * Push login event
  * @param {string} userId - User ID
  * @param {object} userData - Additional user data
@@ -308,6 +349,9 @@ export default {
   pushCartView,
   pushSearch,
   pushFilterApplied,
+  pushLoginAttempt,
+  pushLoginSuccess,
+  pushLoginFail,
   pushLogin,
   pushSignUp,
   pushLogout,
