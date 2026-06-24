@@ -12,7 +12,7 @@ export const CartPage = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { error } = useToast();
-  const { cartView, removeFromCart: trackRemoveFromCart } = useDataLayer();
+  const { cartView, addToCart: trackAddToCart, removeFromCart: trackRemoveFromCart } = useDataLayer();
   const {
     cart,
     isLoading,
@@ -63,7 +63,23 @@ export const CartPage = () => {
   const handleQuantityChange = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
     try {
+      // Find the item to get old quantity and product details
+      const item = cart.items.find(i => i._id === itemId);
+      if (!item) return;
+      
+      const oldQuantity = item.quantity;
+      const quantityDifference = newQuantity - oldQuantity;
+      
       await updateCartItem(itemId, newQuantity);
+      
+      // Track quantity increase as add_to_cart event
+      if (quantityDifference > 0 && item.productId) {
+        trackAddToCart(item.productId, quantityDifference);
+      }
+      // Track quantity decrease as remove_from_cart event
+      else if (quantityDifference < 0 && item.productId) {
+        trackRemoveFromCart(item.productId, Math.abs(quantityDifference));
+      }
     } catch (err) {
       error(err.message);
     }
