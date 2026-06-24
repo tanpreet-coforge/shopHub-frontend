@@ -12,7 +12,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, user } = useAuth();
   const { error: showError } = useToast();
-  const { login: trackLogin } = useDataLayer();
+  const { loginAttempt, loginSuccess, loginFail } = useDataLayer();
   
   // Track page view - updates both dataLayer and appState
   usePageView('Login Page', { pageType: 'login' });
@@ -65,12 +65,18 @@ export const LoginPage = () => {
     }
 
     try {
+      // Track login attempt
+      loginAttempt({ email: formData.email, method: 'email' });
+      
       await login(formData.email, formData.password);
-      // Track login event
-      trackLogin(user?._id || formData.email, { email: formData.email, method: 'email' });
+      
+      // Track login success
+      loginSuccess({ userId: user?._id || formData.email, email: formData.email, method: 'email' });
+      
       navigate('/');
     } catch (err) {
-      // Error is handled by useToast hook
+      // Track login failure
+      loginFail({ email: formData.email, method: 'email', error: err.message });
     }
   };
 
