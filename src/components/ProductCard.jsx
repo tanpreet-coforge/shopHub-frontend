@@ -8,23 +8,50 @@ import { useDataLayer } from '../hooks/useDataLayer';
 import { Button } from './Button';
 
 export const ProductCard = ({ product, onViewDetails }) => {
-  const { addToCart, isLoading } = useCart();
+  const { addToCart, updateCartItem, cart, isLoading } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { success, error } = useToast();
-  const { addToCart: trackAddToCart, wishlistEvent } = useDataLayer();
+  const { addToCart: trackAddToCart, removeFromCart: trackRemoveFromCart, wishlistEvent } = useDataLayer();
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const inWishlist = isInWishlist(product._id);
+  
+  // Check if product is in cart
+  const cartItem = cart?.items?.find(item => item.productId?._id === product._id);
+  const isInCart = !!cartItem;
+
+  useEffect(() => {
+    // Set quantity from cart if product is already in cart
+    if (cartItem) {
+      setQuantity(cartItem.quantity);
+    } else {
+      setQuantity(1);
+    }
+  }, [cartItem]);
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
     try {
       setAdding(true);
-      await addToCart(product._id, quantity);
-      // Track add to cart event
-      trackAddToCart(product, quantity);
-      setQuantity(1);
-      success('Added to cart!');
+      if (isInCart) {
+        // Update existing cart item
+        const quantityDifference = quantity - cartItem.quantity;
+        await updateCartItem(cartItem._id, quantity);
+        
+        // Track the difference in quantity
+        if (quantityDifference > 0) {
+          trackAddToCart(product, quantityDifference);
+        } else if (quantityDifference < 0) {
+          trackRemoveFromCart(product, Math.abs(quantityDifference));
+        }
+        success('Cart updated!');
+      } else {
+        // Add new item to cart
+        await addToCart(product._id, quantity);
+        trackAddToCart(product, quantity);
+        setQuantity(1);
+        success('Added to cart!');
+      }
     } catch (err) {
       error('Please login to add items to cart');
     } finally {
@@ -132,18 +159,68 @@ export const ProductCard = ({ product, onViewDetails }) => {
           {product.stock > 0 ? '✓ In Stock' : 'Out of Stock'}
         </p>
 
-        {/* Add to Cart Button */}
-        <Button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0 || adding || isLoading}
-          variant={product.stock > 0 ? 'primary' : 'ghost'}
-          size="sm"
-          className="w-full"
-          loading={adding}
-        >
-          <ShoppingCart size={16} />
-          Add to Cart
-        </Button>
+        {/* Add to Cart / Quantity Controls */}
+        {isInCart ? (
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2 border rounded">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setQuantity(Math.max(1, quantity - 1));
+                }}
+                className="px-2 py-1 hover:bg-gray-100"
+              >
+                −
+              </button>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setQuantity(Math.max(1, parseInt(e.target.value) || 1));
+                }}
+                className="w-10 text-center border-none"
+                min="1"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setQuantity(Math.min(product.stock, quantity + 1));
+                }}
+                className="px-2 py-1 hover:bg-gray-100"
+              >
+                +
+              </button>
+            </div>
+            <Button
+              onClick={handleAddToCart}
+              disabled={adding || isLoading}
+              variant="primary"
+              size="sm"
+              className="w-full"
+              loading={adding}
+            >
+              <ShoppingCart size={16} />
+              {adding ? 'Updating...' : 'Update Cart'}
+            </Button>
+            <p className="text-xs text-gray-600 mt-2 text-center">
+              {cartItem.quantity} in cart
+            </p>
+          </div>
+        ) : (
+          <Button
+            onClick={handleAddToCart}
+            disabled={product.stock === 0 || adding || isLoading}
+            variant={product.stock > 0 ? 'primary' : 'ghost'}
+            size="sm"
+            className="w-full"
+            loading={adding}
+          >
+            <ShoppingCart size={16} />
+            Add to Cart
+          </Button>
+        )}
       </div>
     </div>
   );
