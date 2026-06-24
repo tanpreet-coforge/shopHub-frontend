@@ -220,7 +220,7 @@ export const ProductsPage = () => {
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
-                      Min: ₹{filters.priceRange.min}
+                      Min: ${filters.priceRange.min}
                     </label>
                     <input
                       type="range"
@@ -233,7 +233,7 @@ export const ProductsPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm text-gray-600 mb-1">
-                      Max: ₹{filters.priceRange.max}
+                      Max: ${filters.priceRange.max}
                     </label>
                     <input
                       type="range"
