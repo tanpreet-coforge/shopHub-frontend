@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../hooks/useCart';
 import { useWishlist } from '../hooks/useWishlist';
 import { useToast } from '../hooks/useToast';
+import { productAPI } from '../services/api';
 import { Button } from './Button';
 
 export const Header = () => {
@@ -15,7 +16,24 @@ export const Header = () => {
   const { success } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [categoriesMenuOpen, setCategoriesMenuOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
   const profileMenuRef = useRef(null);
+  const categoriesMenuRef = useRef(null);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const response = await productAPI.getCategories();
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -23,13 +41,16 @@ export const Header = () => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
       }
+      if (categoriesMenuRef.current && !categoriesMenuRef.current.contains(event.target)) {
+        setCategoriesMenuOpen(false);
+      }
     };
 
-    if (profileMenuOpen) {
+    if (profileMenuOpen || categoriesMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [profileMenuOpen]);
+  }, [profileMenuOpen, categoriesMenuOpen]);
 
   const handleLogout = async () => {
     await logout();
@@ -56,9 +77,49 @@ export const Header = () => {
             <Link to="/" className="text-gray-300 hover:text-amazon-orange transition duration-200">
               Home
             </Link>
-            <Link to="/products" className="text-gray-300 hover:text-amazon-orange transition duration-200">
-              Products
-            </Link>
+            
+            {/* Products Dropdown */}
+            <div className="relative group" ref={categoriesMenuRef}>
+              <button
+                onClick={() => setCategoriesMenuOpen(!categoriesMenuOpen)}
+                onMouseEnter={() => setCategoriesMenuOpen(true)}
+                onMouseLeave={() => setCategoriesMenuOpen(false)}
+                className="flex items-center gap-1 text-gray-300 hover:text-amazon-orange transition duration-200"
+              >
+                Products
+                <ChevronDown size={16} className={`transition duration-200 ${categoriesMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {/* Categories Dropdown Menu */}
+              {categoriesMenuOpen && (
+                <div 
+                  className="absolute left-0 mt-0 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden z-50"
+                  onMouseEnter={() => setCategoriesMenuOpen(true)}
+                  onMouseLeave={() => setCategoriesMenuOpen(false)}
+                >
+                  <Link
+                    to="/products"
+                    className="block px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-amazon-orange transition"
+                    onClick={() => setCategoriesMenuOpen(false)}
+                  >
+                    All Products
+                  </Link>
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => {
+                        navigate(`/products?category=${encodeURIComponent(category)}`);
+                        setCategoriesMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-amazon-orange transition"
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             <Link to="/about" className="text-gray-300 hover:text-amazon-orange transition duration-200">
               About
             </Link>
@@ -186,13 +247,31 @@ export const Header = () => {
               >
                 Home
               </Link>
-              <Link
-                to="/products"
-                className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-amazon-orange transition"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Products
-              </Link>
+               
+              {/* Mobile Products Menu */}
+              <div className="border-t border-gray-600 pt-2">
+                <p className="block px-4 py-2 text-gray-400 font-semibold text-sm uppercase">Products</p>
+                <Link
+                  to="/products"
+                  className="block px-6 py-2 text-gray-300 hover:bg-gray-700 hover:text-amazon-orange transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  All Products
+                </Link>
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => {
+                      navigate(`/products?category=${encodeURIComponent(category)}`);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-6 py-2 text-gray-300 hover:bg-gray-700 hover:text-amazon-orange transition"
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+               
               <Link
                 to="/about"
                 className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-amazon-orange transition"
