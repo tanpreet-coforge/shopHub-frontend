@@ -75,7 +75,7 @@ export const ProductsPage = () => {
       if (filters.search) {
         search(filters.search, filters, products.length);
       }
-    }, 300); // Wait 300ms after last search input before firing
+    }, 600); // Wait 600ms after last search input before firing
     
     // Debounce filter applied event to avoid multiple fires during slider drag
     if (filterAnalyticsTimeout.current) {
