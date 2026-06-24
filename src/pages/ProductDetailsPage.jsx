@@ -12,18 +12,28 @@ import { Button } from '../components/Button';
 export const ProductDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart, isLoading: isCartLoading } = useCart();
+  const { addToCart, updateCartItem, cart, isLoading: isCartLoading } = useCart();
   const { success, error } = useToast();
-  const { productView, addToCart: trackAddToCart } = useDataLayer();
+  const { productView, addToCart: trackAddToCart, removeFromCart: trackRemoveFromCart, updateFromCart: trackUpdateFromCart } = useDataLayer();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  
+  // Check if product is in cart
+  const cartItem = cart?.items?.find(item => item.productId?._id === id);
+  const isInCart = !!cartItem;
 
   useEffect(() => {
     fetchProduct();
-  }, [id]);
+    // Set quantity from cart if product is already in cart
+    if (cartItem) {
+      setQuantity(cartItem.quantity);
+    } else {
+      setQuantity(1);
+    }
+  }, [id, cartItem]);
 
   
   // Track page view when product loads
@@ -54,11 +64,25 @@ export const ProductDetailsPage = () => {
   const handleAddToCart = async () => {
     try {
       setAdding(true);
-      await addToCart(product._id, quantity);
-      // Track add to cart event
-      trackAddToCart(product, quantity);
-      setQuantity(1);
-      success('Product added to cart!');
+      if (isInCart) {
+        // Update existing cart item
+        const quantityDifference = quantity - cartItem.quantity;
+        await updateCartItem(cartItem._id, quantity);
+        
+        // Track the difference in quantity
+        if (quantityDifference > 0) {
+          trackAddToCart(product, quantityDifference);
+        } else if (quantityDifference < 0) {
+          trackRemoveFromCart(product, Math.abs(quantityDifference));
+        }
+        success('Cart updated!');
+      } else {
+        // Add new item to cart
+        await addToCart(product._id, quantity);
+        trackAddToCart(product, quantity);
+        setQuantity(1);
+        success('Product added to cart!');
+      }
     } catch (err) {
       error('Please login to add items to cart');
     } finally {
@@ -192,8 +216,13 @@ export const ProductDetailsPage = () => {
                   className="w-full bg-amazon-orange text-black py-3 rounded-lg font-bold text-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={24} />
-                  {adding ? 'Adding to Cart...' : 'Add to Cart'}
+                  {adding ? (isInCart ? 'Updating Cart...' : 'Adding to Cart...') : (isInCart ? 'Update Cart' : 'Add to Cart')}
                 </button>
+                {isInCart && (
+                  <p className="text-sm text-gray-600 mt-2 text-center">
+                    Currently {cartItem.quantity} in cart
+                  </p>
+                )}
               </div>
 
               {/* Features */}
