@@ -21,8 +21,9 @@ export const ProductsPage = () => {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // Debounce timeout refs for analytics
+  // Debounce timeout refs for analytics and search
   const filterAnalyticsTimeout = useRef(null);
+  const searchTimeout = useRef(null);
   
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
@@ -63,11 +64,18 @@ export const ProductsPage = () => {
   }, [filters.search, filters.category, filters.priceRange, filters.rating, filters.brand]);
   
   useEffect(() => {
-    fetchProducts();
-    // Track search event immediately
-    if (filters.search) {
-      search(filters.search, filters, products.length);
+    // Debounce search API calls to avoid firing on each character
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
     }
+    
+    searchTimeout.current = setTimeout(() => {
+      fetchProducts();
+      // Track search event after debounce
+      if (filters.search) {
+        search(filters.search, filters, products.length);
+      }
+    }, 300); // Wait 300ms after last search input before firing
     
     // Debounce filter applied event to avoid multiple fires during slider drag
     if (filterAnalyticsTimeout.current) {
@@ -83,6 +91,9 @@ export const ProductsPage = () => {
     
     // Cleanup timeout on unmount
     return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
       if (filterAnalyticsTimeout.current) {
         clearTimeout(filterAnalyticsTimeout.current);
       }
