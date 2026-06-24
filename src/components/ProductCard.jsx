@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { productAPI } from '../services/api';
-import { Star, ShoppingCart, Heart } from 'lucide-react';
+import { Star, ShoppingCart, Heart, Trash2 } from 'lucide-react';
 import { useCart } from '../hooks/useAuth';
 import { useWishlist } from '../hooks/useWishlist';
 import { useToast } from '../hooks/useToast';
@@ -8,17 +8,21 @@ import { useDataLayer } from '../hooks/useDataLayer';
 import { Button } from './Button';
 
 export const ProductCard = ({ product, onViewDetails }) => {
-  const { addToCart, updateCartItem, cart, isLoading } = useCart();
+  const { addToCart, updateCartItem, removeFromCart, cart, isLoading } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { success, error } = useToast();
   const { addToCart: trackAddToCart, removeFromCart: trackRemoveFromCart, wishlistEvent } = useDataLayer();
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [removing, setRemoving] = useState(false);
   const inWishlist = isInWishlist(product._id);
   
   // Check if product is in cart
   const cartItem = cart?.items?.find(item => item.productId?._id === product._id);
   const isInCart = !!cartItem;
+  
+  // Check if quantity has changed
+  const hasQuantityChanged = isInCart && quantity !== cartItem.quantity;
 
   useEffect(() => {
     // Set quantity from cart if product is already in cart
@@ -71,6 +75,21 @@ export const ProductCard = ({ product, onViewDetails }) => {
       // Track add to wishlist
       wishlistEvent(product, 'add');
       success('Added to wishlist!');
+    }
+  };
+
+  const handleRemoveFromCart = async (e) => {
+    e.stopPropagation();
+    try {
+      setRemoving(true);
+      await removeFromCart(cartItem._id);
+      // Track remove from cart event
+      trackRemoveFromCart(product, cartItem.quantity);
+      success('Removed from cart!');
+    } catch (err) {
+      error('Failed to remove item from cart');
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -195,7 +214,7 @@ export const ProductCard = ({ product, onViewDetails }) => {
             </div>
             <Button
               onClick={handleAddToCart}
-              disabled={adding || isLoading}
+              disabled={adding || isLoading || !hasQuantityChanged}
               variant="primary"
               size="sm"
               className="w-full"
@@ -204,6 +223,14 @@ export const ProductCard = ({ product, onViewDetails }) => {
               <ShoppingCart size={16} />
               {adding ? 'Updating...' : 'Update Cart'}
             </Button>
+            <button
+              onClick={handleRemoveFromCart}
+              disabled={removing || isLoading}
+              className="w-full mt-2 bg-red-100 text-red-600 py-1 rounded font-semibold hover:bg-red-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <Trash2 size={16} />
+              {removing ? 'Removing...' : 'Remove from Cart'}
+            </button>
             <p className="text-xs text-gray-600 mt-2 text-center">
               {cartItem.quantity} in cart
             </p>
