@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { useDataLayer } from '../hooks/useDataLayer';
@@ -20,6 +20,9 @@ export const ProductsPage = () => {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // Debounce timeout refs for analytics
+  const filterAnalyticsTimeout = useRef(null);
   
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
@@ -61,14 +64,29 @@ export const ProductsPage = () => {
   
   useEffect(() => {
     fetchProducts();
-    // Track search or filter applied
+    // Track search event immediately
     if (filters.search) {
       search(filters.search, filters, products.length);
     }
-    if (filters.category || filters.brand || filters.rating > 0 || 
-        (filters.priceRange.min !== 0 || filters.priceRange.max !== 10000)) {
-      filterApplied(filters);
+    
+    // Debounce filter applied event to avoid multiple fires during slider drag
+    if (filterAnalyticsTimeout.current) {
+      clearTimeout(filterAnalyticsTimeout.current);
     }
+    
+    filterAnalyticsTimeout.current = setTimeout(() => {
+      if (filters.category || filters.brand || filters.rating > 0 || 
+          (filters.priceRange.min !== 0 || filters.priceRange.max !== 10000)) {
+        filterApplied(filters);
+      }
+    }, 600); // Wait 600ms after last filter change before firing event
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (filterAnalyticsTimeout.current) {
+        clearTimeout(filterAnalyticsTimeout.current);
+      }
+    };
   }, [filters]);
 
   const fetchCategories = async () => {
