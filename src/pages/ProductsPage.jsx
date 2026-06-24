@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { useDataLayer } from '../hooks/useDataLayer';
+import { useCart } from '../hooks/useAuth';
 import { usePageView } from '../hooks/usePageView';
 import { updateFiltersState, updateSearchTerm, clearSearchTerm, clearFilters } from '../services/appState';
 import { ProductCard } from '../components/ProductCard';
@@ -12,6 +13,7 @@ export const ProductsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { search, filterApplied } = useDataLayer();
+  const { cart } = useCart();
   
   // Track page view - updates both dataLayer and appState
   usePageView('Products Page', { pageType: 'products_list' });
