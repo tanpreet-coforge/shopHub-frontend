@@ -32,10 +32,11 @@ const fetchCart = useCallback(async () => {
   }
 }, []);
 
-  const addToCart = async (productId, quantity) => {
+  const addToCart = async (productId, quantity, variantData = {}) => {
     try {
       setIsLoading(true);
-      const response = await cartAPI.addToCart({ productId, quantity });
+      const payload = { productId, quantity, ...variantData };
+      const response = await cartAPI.addToCart(payload);
       setCart(response.data.cart);
       return response.data;
     } catch (err) {
