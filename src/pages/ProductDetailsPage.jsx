@@ -28,6 +28,15 @@ export const ProductDetailsPage = () => {
   const existingCartItem = cartItemsForProduct[0];
   const isInCart = !!cartItem;
 
+  // Track page view immediately on route change (before product data loads)
+  useEffect(() => {
+    pushPageView(`Product Details`, { pageType: 'product_detail' });
+    updatePageState({
+      name: 'Product Details',
+      type: 'product_detail',
+    });
+  }, [id]);
+
   useEffect(() => {
     fetchProduct();
   }, [id]);
@@ -49,25 +58,9 @@ export const ProductDetailsPage = () => {
   }, [product, existingCartItem]);
 
   useEffect(() => {
-    if (cartItem) {
-      setQuantity(cartItem.quantity);
-    } else {
-      setQuantity(1);
-    }
+    setQuantity(1);
   }, [cartItem]);
 
-  
-  // Track page view when product loads
-  useEffect(() => {
-    if (product) {
-      pushPageView(`Product: ${product.name}`, { pageType: 'product_detail' });
-      updatePageState({
-        name: `Product: ${product.name}`,
-        type: 'product_detail',
-      });
-    }
-  }, [product]);
-  
   const fetchProduct = async () => {
     try {
       setLoading(true);
