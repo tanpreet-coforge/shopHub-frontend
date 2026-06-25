@@ -88,6 +88,7 @@ export const CheckoutPage = () => {
           quantity: item.quantity,
           price: item.price,
           image: item.productId.image,
+          selectedVariant: item.selectedVariant || {},
         })),
         totalPrice: cart.totalPrice,
         shippingAddress: {
