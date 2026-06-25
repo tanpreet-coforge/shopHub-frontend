@@ -32,6 +32,7 @@ export const useDataLayer = () => {
     checkoutStep: dataLayerService.pushCheckoutStep,
     purchase: dataLayerService.pushPurchase,
     wishlistEvent: dataLayerService.pushWishlistEvent,
+    buttonClick: dataLayerService.pushButtonClick,
     userInfo: dataLayerService.pushUserInfo,
     customEvent: dataLayerService.pushCustomEvent,
   };
