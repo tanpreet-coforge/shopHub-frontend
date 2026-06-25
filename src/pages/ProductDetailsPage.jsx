@@ -5,8 +5,8 @@ import { useCart } from '../hooks/useAuth';
 import { useToast } from '../hooks/useToast';
 import { useDataLayer } from '../hooks/useDataLayer';
 import { updatePageState } from '../services/appState';
-import { pushPageView } from '../services/dataLayer';
-import { Star, ShoppingCart, ChevronLeft } from 'lucide-react';
+import { pushPageView, pushPDPImageClick } from '../services/dataLayer';
+import { Star, ShoppingCart, ChevronLeft, X } from 'lucide-react';
 import { Button } from '../components/Button';
 
 export const ProductDetailsPage = () => {
@@ -21,6 +21,7 @@ export const ProductDetailsPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState({});
+  const [showImageModal, setShowImageModal] = useState(false);
   
   // Track cart items for this product and the currently selected variant
   const cartItemsForProduct = cart?.items?.filter(item => item.productId?._id === id) || [];
@@ -105,6 +106,11 @@ export const ProductDetailsPage = () => {
     }
   };
 
+  const handleImageClick = () => {
+    pushPDPImageClick(product);
+    setShowImageModal(true);
+  };
+
   if (loading) {
     return <div className="py-20 text-center">Loading...</div>;
   }
@@ -132,7 +138,7 @@ export const ProductDetailsPage = () => {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Image */}
-            <div className="flex items-center justify-center bg-gray-100 rounded-lg h-96">
+            <div className="flex items-center justify-center bg-gray-100 rounded-lg h-96 cursor-pointer hover:opacity-90 transition-opacity" onClick={handleImageClick}>
               <img
                 src={product.image}
                 alt={product.name}
@@ -320,6 +326,25 @@ export const ProductDetailsPage = () => {
             )}
           </div>
         </div>
+
+        {/* Image Modal */}
+        {showImageModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75" onClick={() => setShowImageModal(false)}>
+            <div className="relative max-w-4xl max-h-screen w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setShowImageModal(false)}
+                className="absolute top-4 right-4 bg-white text-black rounded-full p-2 hover:bg-gray-200 transition z-10"
+              >
+                <X size={24} />
+              </button>
+              <img
+                src={product.image}
+                alt={product.name}
+                className="max-w-full max-h-full object-contain"
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
