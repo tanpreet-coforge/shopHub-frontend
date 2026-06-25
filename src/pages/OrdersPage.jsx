@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { usePageView } from '../hooks/usePageView';
 import { orderAPI } from '../services/api';
 import { Package, Calendar, DollarSign } from 'lucide-react';
 
@@ -9,6 +10,8 @@ export const OrdersPage = () => {
   const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  usePageView('Orders Page', { pageType: 'orders_list' });
 
   useEffect(() => {
     if (isAuthenticated) {
