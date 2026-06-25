@@ -354,6 +354,26 @@ export const pushUserInfo = (user) => {
 };
 
 /**
+ * Push PDP image click event
+ * @param {object} product - Product object
+ */
+export const pushPDPImageClick = (product) => {
+  pushToDataLayer({
+    event: 'pdp_image_click',
+    product_id: product._id,
+    product_name: product.name,
+    product_price: product.price,
+    product_category: product.category,
+    product_rating: product.rating,
+    product_image: product.image,
+    product_stock: product.stock,
+    product_reviews_count: product.reviews?.length || 0,
+    page_type: 'product_detail',
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
  * Push custom event
  * @param {string} eventName - Event name
  * @param {object} eventData - Event data
@@ -395,6 +415,7 @@ export default {
   pushWishlistEvent,
   pushButtonClick,
   pushUserInfo,
+  pushPDPImageClick,
   pushCustomEvent,
   getDataLayer,
 };
