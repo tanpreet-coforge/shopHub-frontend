@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { usePageView } from '../hooks/usePageView';
 import { Award, Users, Zap, Globe, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card, CardBody } from '../components/Card';
 
 export const AboutPage = () => {
+  usePageView('About Page', { pageType: 'about' });
   const stats = [
     { icon: Users, label: 'Active Customers', value: '50,000+' },
     { icon: Award, label: 'Products Listed', value: '100,000+' },
