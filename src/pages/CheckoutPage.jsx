@@ -57,9 +57,11 @@ export const CheckoutPage = () => {
       checkoutStep(step, {
         cartValue: cart.totalPrice,
         cartItems: cart.totalItems,
+        paymentMethod: paymentData.paymentMethod,
+        shippingMethod: 'standard',
       });
     }
-  }, [step, cart]);
+  }, [step, cart, paymentData.paymentMethod]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -85,12 +87,27 @@ export const CheckoutPage = () => {
         items: cart.items.map((item) => ({
           productId: item.productId._id,
           productName: item.productId.name,
+          productSku: item.productId.sku,
+          productBrand: item.productId.brand,
+          productCategory: item.productId.category,
           quantity: item.quantity,
           price: item.price,
           image: item.productId.image,
           selectedVariant: item.selectedVariant || {},
         })),
-        totalPrice: cart.totalPrice,
+        subtotal: cart.totalPrice,
+        totalPrice: total,
+        shippingCost: 0,
+        tax: parseFloat((cart.totalPrice * 0.1).toFixed(2)),
+        discount: 0,
+        couponCode: undefined,
+        currency: 'USD',
+        orderAffiliation: 'ShopHub',
+        orderOrigin: 'web',
+        paymentProvider: paymentData.paymentMethod,
+        shippingMethod: 'standard',
+        shippingZone: 'domestic',
+        deliveryType: 'standard',
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,
