@@ -118,6 +118,29 @@ export const pushRemoveFromCart = (product, quantity = 1, selectedVariant = {}) 
 };
 
 /**
+ * Push button click event
+ * @param {object} clickData - Button click metadata
+ */
+export const pushButtonClick = ({
+  button_name,
+  button_position,
+  link_text,
+  button_type = 'button',
+  page_section,
+} = {}) => {
+  pushToDataLayer({
+    event: 'button_click',
+    button_name,
+    button_position,
+    button_type,
+    page_section,
+    link_text,
+    page_url: window.location.pathname,
+    timestamp: new Date().toISOString(),
+  });
+};
+
+/**
  * Push cart view event
  * @param {object} cart - Cart object
  */
@@ -370,6 +393,7 @@ export default {
   pushCheckoutStep,
   pushPurchase,
   pushWishlistEvent,
+  pushButtonClick,
   pushUserInfo,
   pushCustomEvent,
   getDataLayer,
