@@ -46,6 +46,10 @@ export const pushPageView = (pageName, pageData = {}) => {
     page_type: pageData.pageType,
     page_url: window.location.pathname,
     page_title: document.title,
+    page_referrer: document.referrer,
+    page_language: document.documentElement.lang || navigator.language,
+    page_query_string: window.location.search,
+    page_platform: navigator.platform,
     timestamp: new Date().toISOString(),
     ...pageData,
   });
@@ -63,9 +67,13 @@ export const pushProductView = (product) => {
     product_name: product.name,
     product_price: product.price,
     product_category: product.category,
+    product_brand: product.brand,
+    product_sku: product.sku,
     product_rating: product.rating,
     product_image: product.image,
     product_stock: product.stock,
+    product_availability: product.stock > 0 ? 'in_stock' : 'out_of_stock',
+    product_discount: product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : undefined,
     timestamp: new Date().toISOString(),
   });
 };
@@ -86,10 +94,14 @@ export const pushAddToCart = (product, quantity = 1, selectedVariant = {}) => {
     product_name: product.name,
     product_price: product.price,
     product_category: product.category,
+    product_brand: product.brand,
+    product_sku: product.sku,
     quantity: quantity,
     value: product.price * quantity,
     product_variant: selectedVariant,
     product_variant_label: variantLabel,
+    product_availability: product.stock > 0 ? 'in_stock' : 'out_of_stock',
+    product_discount: product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : undefined,
     timestamp: new Date().toISOString(),
   });
 };
@@ -109,10 +121,15 @@ export const pushRemoveFromCart = (product, quantity = 1, selectedVariant = {}) 
     product_id: product._id,
     product_name: product.name,
     product_price: product.price,
+    product_category: product.category,
+    product_brand: product.brand,
+    product_sku: product.sku,
     quantity: quantity,
     value: product.price * quantity,
     product_variant: selectedVariant,
     product_variant_label: variantLabel,
+    product_availability: product.stock > 0 ? 'in_stock' : 'out_of_stock',
+    product_discount: product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : undefined,
     timestamp: new Date().toISOString(),
   });
 };
@@ -149,6 +166,7 @@ export const pushCartView = (cart) => {
     event: 'cart_view',
     cart_items: cart.totalItems || 0,
     cart_value: cart.totalPrice || 0,
+    cart_currency: 'USD',
     timestamp: new Date().toISOString(),
   });
 };
@@ -163,10 +181,12 @@ export const pushSearch = (searchTerm, filters = {}, resultsCount = 0) => {
   pushToDataLayer({
     event: 'search',
     search_term: searchTerm,
+    search_term_length: searchTerm?.length,
     search_category: filters.category,
     search_price_range: filters.priceRange,
     search_sort: filters.sort,
     search_results_count: resultsCount,
+    search_filter_count: Object.values(filters || {}).filter((value) => value !== undefined && value !== null && value !== '').length,
     timestamp: new Date().toISOString(),
   });
 };
@@ -182,6 +202,7 @@ export const pushFilterApplied = (filters) => {
     filter_price_range: filters.priceRange,
     filter_rating: filters.rating,
     filter_brand: filters.brand,
+    filter_count: Object.values(filters || {}).filter((value) => value !== undefined && value !== null && value !== '').length,
     all_filters: JSON.stringify(filters),
     timestamp: new Date().toISOString(),
   });
@@ -276,11 +297,18 @@ export const pushLogout = () => {
  * @param {object} checkoutData - Checkout data
  */
 export const pushCheckoutStep = (step, checkoutData = {}) => {
+  const checkoutStepNames = {
+    1: 'shipping',
+    2: 'payment',
+    3: 'confirmation',
+  };
   pushToDataLayer({
     event: `checkout_step_${step}`,
     checkout_step: step,
+    checkout_step_name: checkoutStepNames[step] || 'unknown',
     cart_value: checkoutData.cartValue,
     cart_items: checkoutData.cartItems,
+    cart_currency: 'USD',
     payment_method: checkoutData.paymentMethod,
     shipping_method: checkoutData.shippingMethod,
     timestamp: new Date().toISOString(),
@@ -305,24 +333,39 @@ export const pushPurchase = (order) => {
     order_id: order._id || order.id,
     user_id: order.userId || order.user?._id || order.user?.id || order.user,
     order_total: order.totalPrice ?? order.totalAmount ?? order.total,
+    order_subtotal: order.subtotal ?? order.totalPrice ?? order.total,
+    order_shipping_cost: order.shippingCost || order.shipping_cost || 0,
+    order_tax: order.tax || order.order_tax || 0,
+    order_discount: order.discount || order.order_discount || 0,
+    order_coupon: order.couponCode || order.coupon_code,
+    order_affiliation: order.orderAffiliation || order.order_affiliation,
+    order_origin: order.orderOrigin || order.order_origin,
     payment_method: order.paymentMethod || order.payment_method,
+    payment_provider: order.paymentProvider || order.payment_provider || order.paymentMethod || order.payment_method,
     payment_status: order.paymentStatus || order.payment_status,
     order_status: order.orderStatus || order.status || order.order_status,
     tracking_number: order.trackingNumber || order.tracking_number,
     estimated_delivery: order.estimatedDelivery || order.estimated_delivery || order.estimatedDeliveryDate,
+    shipping_method: order.shippingMethod || order.shipping_method,
+    shipping_zone: order.shippingZone || order.shipping_zone,
+    delivery_type: order.deliveryType || order.delivery_type,
     shipping_city: order.shippingAddress?.city || order.shipping_city,
     shipping_state: order.shippingAddress?.state || order.shipping_state,
     shipping_country: order.shippingAddress?.country || order.shipping_country,
     postal_code: order.shippingAddress?.postalCode || order.shippingAddress?.postal_code,
     order_items_count: order.items?.length || 0,
     order_items: order.items?.map(item => ({
-      product_id: item.productId?._id || item.productId || item.product_id || item.productId,
+      product_id: item.productId?._id || item.productId || item.product_id,
       product_name: item.productId?.name || item.productName || item.name || item.product_name,
+      product_sku: item.productSku || item.product_sku,
+      product_brand: item.productBrand || item.product_brand,
+      product_category: item.productCategory || item.product_category || item.productId?.category,
       product_price: item.price ?? item.productPrice ?? item.product_price,
       quantity: item.quantity,
+      product_variant: item.selectedVariant || item.productVariant || item.product_variant,
       product_image: item.productId?.image || item.image || item.product_image,
     })),
-    currency: 'USD',
+    currency: order.currency || order.order_currency || 'USD',
     timestamp: new Date().toISOString(),
   });
 
@@ -341,6 +384,8 @@ export const pushWishlistEvent = (product, action = 'add') => {
     product_name: product.name,
     product_price: product.price,
     product_category: product.category,
+    product_brand: product.brand,
+    product_sku: product.sku,
     timestamp: new Date().toISOString(),
   });
 };
@@ -375,10 +420,14 @@ export const pushPDPImageClick = (product) => {
     product_name: product.name,
     product_price: product.price,
     product_category: product.category,
+    product_brand: product.brand,
+    product_sku: product.sku,
     product_rating: product.rating,
     product_image: product.image,
     product_stock: product.stock,
+    product_availability: product.stock > 0 ? 'in_stock' : 'out_of_stock',
     product_reviews_count: product.reviews?.length || 0,
+    product_discount: product.originalPrice ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) : undefined,
     page_type: 'product_detail',
     timestamp: new Date().toISOString(),
   });
