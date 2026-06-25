@@ -74,11 +74,11 @@ export const CartPage = () => {
       
       // Track quantity increase as add_to_cart event
       if (quantityDifference > 0 && item.productId) {
-        trackAddToCart(item.productId, quantityDifference);
+        trackAddToCart(item.productId, quantityDifference, item.selectedVariant || {});
       }
       // Track quantity decrease as remove_from_cart event
       else if (quantityDifference < 0 && item.productId) {
-        trackRemoveFromCart(item.productId, Math.abs(quantityDifference));
+        trackRemoveFromCart(item.productId, Math.abs(quantityDifference), item.selectedVariant || {});
       }
     } catch (err) {
       error(err.message);
@@ -90,7 +90,7 @@ export const CartPage = () => {
       await removeFromCart(itemId);
       // Track remove from cart event
       if (item && item.productId) {
-        trackRemoveFromCart(item.productId, item.quantity);
+        trackRemoveFromCart(item.productId, item.quantity, item.selectedVariant || {});
       }
     } catch (err) {
       error(err.message);
