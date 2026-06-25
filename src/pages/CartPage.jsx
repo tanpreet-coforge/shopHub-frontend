@@ -130,6 +130,15 @@ export const CartPage = () => {
                     <p className="text-gray-600 text-sm">
                       Category: {item.productId?.category}
                     </p>
+                    {item.selectedVariant && Object.keys(item.selectedVariant).length > 0 && (
+                      <div className="mt-2 text-sm text-gray-700 space-y-1">
+                        {Object.entries(item.selectedVariant).map(([key, value]) => (
+                          <p key={key}>
+                            <span className="font-semibold">{key}:</span> {value}
+                          </p>
+                        ))}
+                      </div>
+                    )}
                     <p className="text-amazon-orange font-bold mt-2">
                       ${item.price.toFixed(2)}
                     </p>
