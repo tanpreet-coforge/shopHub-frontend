@@ -20,20 +20,41 @@ export const ProductDetailsPage = () => {
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [adding, setAdding] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState({});
   
-  // Check if product is in cart
-  const cartItem = cart?.items?.find(item => item.productId?._id === id);
+  // Track cart items for this product and the currently selected variant
+  const cartItemsForProduct = cart?.items?.filter(item => item.productId?._id === id) || [];
+  const cartItem = cartItemsForProduct.find(item => JSON.stringify(item.selectedVariant || {}) === JSON.stringify(selectedVariant || {}));
+  const existingCartItem = cartItemsForProduct[0];
   const isInCart = !!cartItem;
 
   useEffect(() => {
     fetchProduct();
-    // Set quantity from cart if product is already in cart
+  }, [id]);
+
+  useEffect(() => {
+    if (!product) return;
+
+    if (product.variants && Object.keys(product.variants).length > 0) {
+      if (existingCartItem?.selectedVariant) {
+        setSelectedVariant(existingCartItem.selectedVariant);
+      } else if (Object.keys(selectedVariant).length === 0) {
+        setSelectedVariant(
+          Object.fromEntries(
+            Object.entries(product.variants).map(([key, options]) => [key, options[0]])
+          )
+        );
+      }
+    }
+  }, [product, existingCartItem]);
+
+  useEffect(() => {
     if (cartItem) {
       setQuantity(cartItem.quantity);
     } else {
       setQuantity(1);
     }
-  }, [id, cartItem]);
+  }, [cartItem]);
 
   
   // Track page view when product loads
@@ -64,12 +85,14 @@ export const ProductDetailsPage = () => {
   const handleAddToCart = async () => {
     try {
       setAdding(true);
+      const variantData = selectedVariant && Object.keys(selectedVariant).length > 0
+        ? { selectedVariant }
+        : {};
+
       if (isInCart) {
-        // Update existing cart item
         const quantityDifference = quantity - cartItem.quantity;
         await updateCartItem(cartItem._id, quantity);
-        
-        // Track the difference in quantity
+
         if (quantityDifference > 0) {
           trackAddToCart(product, quantityDifference);
         } else if (quantityDifference < 0) {
@@ -77,8 +100,7 @@ export const ProductDetailsPage = () => {
         }
         success('Cart updated!');
       } else {
-        // Add new item to cart
-        await addToCart(product._id, quantity);
+        await addToCart(product._id, quantity, variantData);
         trackAddToCart(product, quantity);
         setQuantity(1);
         success('Product added to cart!');
@@ -182,6 +204,38 @@ export const ProductDetailsPage = () => {
                 </p>
               </div>
 
+              {/* Variant Selection */}
+              {product.variants && Object.keys(product.variants).length > 0 && (
+                <div className="mb-6">
+                  <h3 className="font-semibold text-lg mb-3">Select Version</h3>
+                  <div className="space-y-4">
+                    {Object.entries(product.variants).map(([variantName, options]) => (
+                      <div key={variantName}>
+                        <p className="text-sm font-medium mb-2 text-gray-700">{variantName}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {options.map((option) => {
+                            const selected = selectedVariant[variantName] === option;
+                            return (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => setSelectedVariant((prev) => ({
+                                  ...prev,
+                                  [variantName]: option,
+                                }))}
+                                className={`px-4 py-2 border rounded-lg transition ${selected ? 'bg-amazon-orange text-black border-amazon-orange' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'}`}
+                              >
+                                {option}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Quantity & Add to Cart */}
               <div className="mb-8">
                 <div className="flex items-center gap-4 mb-4">
@@ -212,12 +266,15 @@ export const ProductDetailsPage = () => {
 
                 <button
                   onClick={handleAddToCart}
-                  disabled={product.stock === 0 || adding || isCartLoading}
+                  disabled={product.stock === 0 || adding || isCartLoading || (product.variants && Object.keys(product.variants).length > 0 && Object.keys(selectedVariant).length !== Object.keys(product.variants).length)}
                   className="w-full bg-amazon-orange text-black py-3 rounded-lg font-bold text-lg hover:bg-orange-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={24} />
                   {adding ? (isInCart ? 'Updating Cart...' : 'Adding to Cart...') : (isInCart ? 'Update Cart' : 'Add to Cart')}
                 </button>
+                {product.variants && Object.keys(product.variants).length > 0 && Object.keys(selectedVariant).length !== Object.keys(product.variants).length && (
+                  <p className="text-sm text-red-600 mt-2 text-center">Please select all options before adding to cart.</p>
+                )}
                 {isInCart && (
                   <p className="text-sm text-gray-600 mt-2 text-center">
                     Currently {cartItem.quantity} in cart
