@@ -106,13 +106,32 @@ export const CheckoutPage = () => {
       };
 
       const response = await orderAPI.createOrder(orderData);
-      // Track purchase event
-      purchase({
-        _id: response.data.order._id,
-        totalPrice: response.data.order.totalPrice,
-        items: response.data.order.items || cart.items,
-      });
-      setOrderId(response.data.order._id);
+      // Track purchase event with only required order data to avoid sending PII
+      const order = response.data.order;
+      const safePurchasePayload = {
+        _id: order._id,
+        userId: order.userId || order.user?._id || order.user?.id,
+        totalPrice: order.totalPrice ?? order.totalAmount ?? cart.totalPrice,
+        paymentMethod: order.paymentMethod || order.payment_method,
+        paymentStatus: order.paymentStatus || order.payment_status,
+        orderStatus: order.orderStatus || order.status || order.order_status,
+        trackingNumber: order.trackingNumber || order.tracking_number,
+        estimatedDelivery: order.estimatedDelivery || order.estimated_delivery || order.estimatedDeliveryDate,
+        shipping_city: order.shippingAddress?.city || order.shipping_city || orderData.shippingAddress.city,
+        shipping_state: order.shippingAddress?.state || order.shipping_state || orderData.shippingAddress.state,
+        shipping_country: order.shippingAddress?.country || order.shipping_country || orderData.shippingAddress.country,
+        postal_code: order.shippingAddress?.postalCode || order.shippingAddress?.postal_code || order.shipping_address?.postalCode || order.shipping_address?.postal_code || orderData.shippingAddress.postalCode,
+        items: (order.items || cart.items).map((item) => ({
+          productId: item.productId?._id || item.productId || item.product_id,
+          productName: item.productName || item.productId?.name || item.name || item.product_name,
+          price: item.price ?? item.productPrice ?? item.product_price,
+          quantity: item.quantity,
+          image: item.image || item.productId?.image || item.productImage || item.product_image,
+        })),
+      };
+
+      purchase(safePurchasePayload);
+      setOrderId(order._id);
       await clearCart();
       success('Order created successfully!');
       setStep(3);
