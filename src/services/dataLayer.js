@@ -75,7 +75,11 @@ export const pushProductView = (product) => {
  * @param {object} product - Product object
  * @param {number} quantity - Quantity added
  */
-export const pushAddToCart = (product, quantity = 1) => {
+export const pushAddToCart = (product, quantity = 1, selectedVariant = {}) => {
+  const variantLabel = selectedVariant && Object.keys(selectedVariant).length > 0
+    ? Object.entries(selectedVariant).map(([key, value]) => `${key}: ${value}`).join(', ')
+    : undefined;
+
   pushToDataLayer({
     event: 'add_to_cart',
     product_id: product._id,
@@ -84,6 +88,8 @@ export const pushAddToCart = (product, quantity = 1) => {
     product_category: product.category,
     quantity: quantity,
     value: product.price * quantity,
+    product_variant: selectedVariant,
+    product_variant_label: variantLabel,
     timestamp: new Date().toISOString(),
   });
 };
@@ -93,7 +99,11 @@ export const pushAddToCart = (product, quantity = 1) => {
  * @param {object} product - Product object
  * @param {number} quantity - Quantity removed
  */
-export const pushRemoveFromCart = (product, quantity = 1) => {
+export const pushRemoveFromCart = (product, quantity = 1, selectedVariant = {}) => {
+  const variantLabel = selectedVariant && Object.keys(selectedVariant).length > 0
+    ? Object.entries(selectedVariant).map(([key, value]) => `${key}: ${value}`).join(', ')
+    : undefined;
+
   pushToDataLayer({
     event: 'remove_from_cart',
     product_id: product._id,
@@ -101,6 +111,8 @@ export const pushRemoveFromCart = (product, quantity = 1) => {
     product_price: product.price,
     quantity: quantity,
     value: product.price * quantity,
+    product_variant: selectedVariant,
+    product_variant_label: variantLabel,
     timestamp: new Date().toISOString(),
   });
 };
