@@ -1,4 +1,5 @@
 import React from 'react';
+import { pushButtonClick } from '../services/dataLayer';
 
 export const Button = ({
   children,
@@ -7,6 +8,11 @@ export const Button = ({
   disabled = false,
   loading = false,
   className = '',
+  trackingName,
+  trackingPosition,
+  trackingLinkText,
+  trackingType,
+  onClick,
   ...props
 }) => {
   const baseStyles = 'font-semibold rounded-lg transition duration-200 inline-flex items-center justify-center gap-2';
@@ -25,10 +31,26 @@ export const Button = ({
     lg: 'px-6 py-3 text-lg',
   };
 
+  const handleClick = (event) => {
+    if (trackingName && trackingPosition) {
+      pushButtonClick({
+        button_name: trackingName,
+        button_position: trackingPosition,
+        link_text: trackingLinkText,
+        button_type: trackingType,
+      });
+    }
+
+    if (typeof onClick === 'function') {
+      onClick(event);
+    }
+  };
+
   return (
     <button
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       disabled={disabled || loading}
+      onClick={handleClick}
       {...props}
     >
       {loading && <span className="inline-block animate-spin">⏳</span>}
