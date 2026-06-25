@@ -1,8 +1,20 @@
 import React from 'react';
 import { Facebook, Twitter, Instagram, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
+import { useDataLayer } from '../hooks/useDataLayer';
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { buttonClick } = useDataLayer();
+
+  const trackFooterLink = (button_name, button_position, link_text, button_type = 'link') => () => {
+    buttonClick({
+      button_name,
+      button_position,
+      link_text,
+      button_type,
+      page_section: 'footer',
+    });
+  };
 
   const links = [
     {
@@ -54,6 +66,7 @@ export const Footer = () => {
                     <a
                       href="#"
                       className="text-gray-400 hover:text-amazon-orange transition duration-200 text-sm"
+                      onClick={trackFooterLink(item, 'footer_links', item, 'link')}
                     >
                       {item}
                     </a>
@@ -96,6 +109,7 @@ export const Footer = () => {
                     href={href}
                     aria-label={label}
                     className="w-10 h-10 bg-gray-700 hover:bg-amazon-orange text-gray-300 hover:text-black rounded-full flex items-center justify-center transition duration-200"
+                    onClick={trackFooterLink(label, 'footer_social', label, 'link')}
                   >
                     <Icon size={18} />
                   </a>
@@ -111,13 +125,25 @@ export const Footer = () => {
             © {currentYear} ShopHub. All rights reserved. | E-Commerce Prototype
           </p>
           <div className="mt-4 md:mt-0 flex gap-6">
-            <a href="#" className="text-gray-500 hover:text-amazon-orange text-sm transition">
+            <a
+              href="#"
+              className="text-gray-500 hover:text-amazon-orange text-sm transition"
+              onClick={trackFooterLink('Terms & Conditions', 'footer_legal', 'Terms & Conditions', 'link')}
+            >
               Terms & Conditions
             </a>
-            <a href="#" className="text-gray-500 hover:text-amazon-orange text-sm transition">
+            <a
+              href="#"
+              className="text-gray-500 hover:text-amazon-orange text-sm transition"
+              onClick={trackFooterLink('Privacy Policy', 'footer_legal', 'Privacy Policy', 'link')}
+            >
               Privacy Policy
             </a>
-            <a href="#" className="text-gray-500 hover:text-amazon-orange text-sm transition">
+            <a
+              href="#"
+              className="text-gray-500 hover:text-amazon-orange text-sm transition"
+              onClick={trackFooterLink('Cookie Settings', 'footer_legal', 'Cookie Settings', 'link')}
+            >
               Cookie Settings
             </a>
           </div>
