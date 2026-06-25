@@ -94,14 +94,14 @@ export const ProductDetailsPage = () => {
         await updateCartItem(cartItem._id, quantity);
 
         if (quantityDifference > 0) {
-          trackAddToCart(product, quantityDifference);
+          trackAddToCart(product, quantityDifference, selectedVariant);
         } else if (quantityDifference < 0) {
-          trackRemoveFromCart(product, Math.abs(quantityDifference));
+          trackRemoveFromCart(product, Math.abs(quantityDifference), selectedVariant);
         }
         success('Cart updated!');
       } else {
         await addToCart(product._id, quantity, variantData);
-        trackAddToCart(product, quantity);
+        trackAddToCart(product, quantity, selectedVariant);
         setQuantity(1);
         success('Product added to cart!');
       }
