@@ -73,10 +73,6 @@ export const ProductsPage = () => {
     
     searchTimeout.current = setTimeout(() => {
       fetchProducts();
-      // Track search event after debounce
-      if (filters.search) {
-        search(filters.search, filters, products.length);
-      }
     }, 600); // Wait 600ms after last search input before firing
     
     // Debounce filter applied event to avoid multiple fires during slider drag
@@ -140,7 +136,12 @@ export const ProductsPage = () => {
       const response = await productAPI.getAllProducts(
         Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined))
       );
-      setProducts(response.data.data);
+      const productsReturned = response.data?.data || [];
+      setProducts(productsReturned);
+
+      if (filters.search) {
+        search(filters.search, filters, productsReturned.length);
+      }
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
